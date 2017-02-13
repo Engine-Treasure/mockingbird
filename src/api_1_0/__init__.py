@@ -1,5 +1,13 @@
 from flask import Blueprint
+from flask_restful import Api
 
-api = Blueprint("api", __name__)
+from . import mock_dsp, mock_todo
 
-from . import authentication, comments, errors, posts, users
+api_bp = Blueprint("api", __name__)
+
+api_todo = Api(api_bp)
+
+api_todo.add_resource(mock_todo.TaskListAPI, "/todo/api/v1.0/tasks",
+                      endpoint="tasks")
+api_todo.add_resource(mock_todo.TaskAPI, "/todo/api/v1.0/task/<int:id>",
+                      endpoint="task")

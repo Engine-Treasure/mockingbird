@@ -1,36 +1,20 @@
+#!/usr/bin/python
 # -*-coding: utf-8 -*-
 
-from flask.ext.script import Manager
-from flask.ext.bootstrap import Bootstrap
-from flask import Flask, redirect, make_response, render_template
+from flask import Flask, render_template
+from flask_bootstrap import Bootstrap
+from flask_moment import Moment
+from flask_script import Manager
+
+from api_1_0 import api_bp
 
 app = Flask(__name__)  # Flask 用这个参数决定程序的根目录
-app.debug = True
+app.register_blueprint(api_bp)  # 注册 API 蓝图，很关键
 
 bootstrap = Bootstrap(app)
+moment = Moment(app)
 manager = Manager(app)
-
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-# <name> 为 URL 的动态部分，作为参数传入视图函数
-@app.route("/user/<name>")
-def user(name):
-    return render_template("user.html", name=name)
-
-
-@app.route("/redirect1")
-def redirect1():
-    return redirect("http://kissg.me")
-
-
-@app.route("/redirect2")
-def redirect2():
-    response = make_response("", 302, {"Location": "http://kissg.me"})
-    return response
+app.test_client()
 
 
 @app.errorhandler(404)
