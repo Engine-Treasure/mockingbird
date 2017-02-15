@@ -9,6 +9,7 @@ from flask_script import Manager
 from api_1_0 import api_bp
 
 app = Flask(__name__)  # Flask 用这个参数决定程序的根目录
+app.debug = True
 app.register_blueprint(api_bp)  # 注册 API 蓝图，很关键
 
 bootstrap = Bootstrap(app)

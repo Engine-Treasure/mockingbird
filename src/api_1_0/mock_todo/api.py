@@ -27,7 +27,7 @@ task_fields = {
     "description": fields.String,
     "done": fields.Boolean,
     "uri": fields.Url("api.task")
-# special type that generates URL, 参数是 `endpoint`
+    # special type that generates URL, 参数是 `endpoint`
 }
 
 
