@@ -2,13 +2,13 @@ from __future__ import absolute_import
 import json
 import unittest
 
-from app import app
+from app import create_app
 
 
 class TestTodoList(unittest.TestCase):
+
     def setUp(self):
-        app.debug = True
-        self.app = app.app.test_client()
+        self.app = create_app("default").test_client()
         self.url = "/todo/api/v1.0/tasks"
 
     def test_get(self):
@@ -34,8 +34,7 @@ class TestTodoList(unittest.TestCase):
 
 class TestTodo(unittest.TestCase):
     def setUp(self):
-        app.debug = True
-        self.app = app.app.test_client()
+        self.app = create_app("default").test_client()
 
     def test_get(self):
         response = self.app.get("/todo/api/v1.0/task/1",
