@@ -92,3 +92,4 @@ ENV3/
 .ropeproject
 
 .idea/
+*.sqlite
