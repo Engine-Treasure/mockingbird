@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import json
 import unittest
 
-from src import app
+from app import app
 
 
 class TestTodoList(unittest.TestCase):
