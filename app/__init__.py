@@ -11,6 +11,7 @@ db = SQLAlchemy()
 
 def create_app(config_name):
     app = Flask(__name__)
+    app.debug = True
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
@@ -18,8 +19,11 @@ def create_app(config_name):
     moment.init_app(app)
     db.init_app(app)
 
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    from .main import main as main_bp
+    app.register_blueprint(main_bp)
+
+    from api_1_0 import api_bp
+    app.register_blueprint(api_bp)
 
     return app
 

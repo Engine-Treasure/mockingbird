@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
-from flask import request, abort
-from flask_restful import Resource, reqparse, marshal
+import pickle
 
-from config import adowner_fields
-from data import adowners
+from flask import request, abort
+from flask_restful import Resource, reqparse
+from sqlalchemy.exc import IntegrityError
+
+from app import db
+from app.models import AdOwner
 
 
 def set_reqparser(self):
@@ -52,10 +55,12 @@ class AdvertisersAPI(Resource):
         super(AdvertisersAPI, self).__init__()
 
     def get(self):
-        return {"success": True,
-                "message": "",
-                "data": [marshal(adowner, adowner_fields) for adowner in
-                         adowners]}
+        adowners = [adowner.extract() for adowner in AdOwner.query.all()]
+        return {
+            "success": True,
+            "message": "",
+            "data": adowners
+        }
 
     def post(self):
         if not request.is_json:
@@ -64,39 +69,48 @@ class AdvertisersAPI(Resource):
             root_args = self.root_reqparser.parse_args()
             # 需要先获得 root_args, 作为 adowner_reqparser 的参数
             adowner_args = self.adowner_reqparser.parse_args(root_args)
-            oem_id = adowner_args["id"]
-            bdx_id = adowners[-1]["bdx_id"] + 1
-            names = [adowner["name"] for adowner in adowners]
-            if adowner_args["name"] in names:
+
+            if AdOwner.query.filter_by(name=adowner_args["name"]).first() \
+                    is not None:
                 abort(401, "AdOwner's name is already in use.")
-            adowner = {
-                "oem_id": oem_id,
-                "bdx_id": bdx_id,
-                "name": adowner_args["name"],
-                "area": adowner_args["area"],
-                "category": adowner_args["category"],
-                "brand": adowner_args["brand"],
-                "turn": adowner_args["turn"],
-                "url": adowner_args["url"],
-                "lic": adowner_args["lic"],
-                "org": adowner_args["org"],
-                "tax": adowner_args["tax"],
-                "reg": adowner_args["reg"],
-                "icp": adowner_args["icp"],
-                "card": adowner_args["card"],
-                "adx": root_args["adx"],
-                "adx_id": root_args["adx_id"],
-                "bdx_materials": [
-                    {"type_id": material["TypeId"], "name": material["Name"],
-                     "path": material["Path"]} for material in
-                    adowner_args["bdx_materials"]]
-            }
-            adowners.append(adowner)
-            return {
-                "success": True,
-                "message": "",
-                "data": {"qualification": {oem_id: bdx_id}}
-            }
+            else:
+                oem_id = adowner_args["id"]
+                bdx_id = len(AdOwner.query.all()) + 1
+                bdx_materials = [dict(
+                    type_id=material["TypeId"],
+                    name=material["Name"],
+                    path=material["Path"]
+                ) for material in adowner_args["bdx_materials"]]
+                adowner = AdOwner(
+                    oem_id=oem_id,
+                    bdx_id=bdx_id,
+                    name=adowner_args["name"],
+                    area=adowner_args["area"],
+                    category=adowner_args["category"],
+                    turn=adowner_args["turn"],
+                    url=adowner_args["url"],
+                    lic=adowner_args["lic"],
+                    org=adowner_args["org"],
+                    tax=adowner_args["tax"],
+                    reg=adowner_args["reg"],
+                    icp=adowner_args["icp"],
+                    card=adowner_args["card"],
+                    adx=pickle.dumps(root_args["adx"]),
+                    adx_id=pickle.dumps(root_args["adx_id"]),
+                    bdx_materials=pickle.dumps(bdx_materials)
+                )
+                try:
+                    db.session.add(adowner)
+                    db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
+                    abort(400, "Id is already in used.")
+
+                return {
+                    "success": True,
+                    "message": "",
+                    "data": {"qualification": {oem_id: bdx_id}}
+                }
 
 
 class AdvertiserAPI(Resource):
@@ -105,7 +119,7 @@ class AdvertiserAPI(Resource):
         super(AdvertiserAPI, self).__init__()
 
     def get(self, id):
-        adowner = filter(lambda t: t["oem_id"] == id, adowners)
+        adowner = filter(lambda t: t["oem_id"] == id, AdOwner.query.all())
         if len(adowner) == 0:
             abort(404)
         return {"success": True, "message": "",
@@ -115,6 +129,7 @@ class AdvertiserAPI(Resource):
         if not request.is_json:
             abort(401)
         else:
+            adowners = AdOwner.query.all()
             adowner_orig = filter(lambda t: t["oem_id"] == id, adowners)
             if len(adowner_orig) == 0:
                 abort(404)
@@ -157,6 +172,7 @@ class AdvertiserAPI(Resource):
             }
 
     def delete(self, id):
+        adowners = AdOwner.query.all()
         adowner = [adowner for adowner in adowners if adowner["oem_id"] == id]
         if len(adowner) == 0:
             abort(404, "AdOwner doesn't exist.")
