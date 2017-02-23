@@ -30,5 +30,6 @@ api.add_resource(mock_todo.TaskAPI, "/todo/api/v1.0/task/<int:id>",
 
 api.add_resource(mock_dsp.AdvertisersAPI, "/dsp/api/v1.0/advertisers",
                  endpoint="advertisers")
-api.add_resource(mock_dsp.AdvertiserAPI, "/dsp/api/v1.0/advertiser/<int:id>",
+api.add_resource(mock_dsp.AdvertiserAPI,
+                 "/dsp/api/v1.0/advertiser/<int:oem_id>",
                  endpoint="advertiser")

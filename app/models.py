@@ -31,8 +31,8 @@ class User(db.Model):
 
 class AdOwner(db.Model):
     __tablename__ = "adowners"
-    oem_id = db.Column(db.Integer, primary_key=True)
-    bdx_id = db.Column(db.Integer, unique=True, index=True)
+    bdx_id = db.Column(db.Integer, primary_key=True)
+    oem_id = db.Column(db.Integer, unique=True, index=True)
     name = db.Column(db.String(64), unique=True, index=True)
     url = db.Column(db.String, nullable=False)
     area = db.Column(db.String)

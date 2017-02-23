@@ -118,63 +118,66 @@ class AdvertiserAPI(Resource):
         set_reqparser(self)
         super(AdvertiserAPI, self).__init__()
 
-    def get(self, id):
-        adowner = filter(lambda t: t["oem_id"] == id, AdOwner.query.all())
-        if len(adowner) == 0:
-            abort(404)
+    def get(self, oem_id):
+        adowner = AdOwner.query.filter_by(oem_id=oem_id).first()
+        if adowner is None:
+            abort(404, "AdOwner doesn't exist.")
         return {"success": True, "message": "",
-                "data": adowner}
+                "data": adowner.extract()}
 
-    def put(self, id):
+    def put(self, oem_id):
         if not request.is_json:
             abort(401)
         else:
-            adowners = AdOwner.query.all()
-            adowner_orig = filter(lambda t: t["oem_id"] == id, adowners)
-            if len(adowner_orig) == 0:
-                abort(404)
-            adowner_orig = adowner_orig[0]
             root_args = self.root_reqparser.parse_args()
+            # 需要先获得 root_args, 作为 adowner_reqparser 的参数
             adowner_args = self.adowner_reqparser.parse_args(root_args)
-            if adowner_orig["name"] != adowner_args["name"]:
-                abort(401, "Update adowner's name is forbidden.")
-            adowner = {
-                "oem_id": adowner_args["id"],
-                "bdx_id": adowner_orig["bdx_id"],
-                "name": adowner_args["name"],
-                "area": adowner_args["area"],
-                "category": adowner_args["category"],
-                "brand": adowner_args["brand"],
-                "turn": adowner_args["turn"],
-                "url": adowner_args["url"],
-                "lic": adowner_args["lic"],
-                "org": adowner_args["org"],
-                "tax": adowner_args["tax"],
-                "reg": adowner_args["reg"],
-                "icp": adowner_args["icp"],
-                "card": adowner_args["card"],
-                "adx": root_args["adx"],
-                "adx_id": root_args["adx_id"],
-                "bdx_materials": [
-                    {"type_id": material["TypeId"], "name": material["Name"],
-                     "path": material["Path"]} for material in
-                    adowner_args["bdx_materials"]]
-            }
-            # 更新操作由删除和新增两个操作组成, 必须在一起
-            adowners.remove(adowner_orig)
-            adowners.append(adowner)
+            oem_id = adowner_args["oem_id"]
+            adowner = AdOwner.query.filter_by(oem_id=oem_id).first()
+            if adowner is None:
+                abort(400, "AdOwner doesn't exist.")
+            elif adowner_args["name"] != adowner.name:
+                abort(400, "AdOwner name can't be updated.")
+            else:
+                bdx_materials = [dict(
+                    type_id=material["TypeId"],
+                    name=material["Name"],
+                    path=material["Path"]
+                ) for material in adowner_args["bdx_materials"]]
+                adowner.oem_id = oem_id
+                adowner.area = adowner_args["area"]
+                adowner.category = adowner_args["category"]
+                adowner.turn = adowner_args["turn"]
+                adowner.url = adowner_args["url"]
+                adowner.lic = adowner_args["lic"]
+                adowner.org = adowner_args["org"]
+                adowner.tax = adowner_args["tax"]
+                adowner.reg = adowner_args["reg"]
+                adowner.icp = adowner_args["icp"]
+                adowner.card = adowner_args["card"]
+                adowner.adx = pickle.dumps(root_args["adx"])
+                adowner.adx_id = pickle.dumps(root_args["adx_id"])
+                adowner.bdx_materials = pickle.dumps(bdx_materials)
+            try:
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                abort(500)
+
             return {
                 "success": True,
                 "message": "",
-                "data": {
-                    "qualification": {adowner["oem_id"]: adowner["bdx_id"]}
-                }
+                "data": {"qualification": {oem_id: adowner.bdx_id}}
             }
 
-    def delete(self, id):
-        adowners = AdOwner.query.all()
-        adowner = [adowner for adowner in adowners if adowner["oem_id"] == id]
-        if len(adowner) == 0:
+    def delete(self, oem_id):
+        adowner = AdOwner.query.filter_by(oem_id=oem_id).first()
+        if adowner is None:
             abort(404, "AdOwner doesn't exist.")
-        adowners.remove(adowner[0])
+        try:
+            db.session.delete(adowner)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            abort(500)
         return {"success": True, "message": ""}
