@@ -75,7 +75,6 @@ class AdvertisersAPI(Resource):
                 abort(401, "AdOwner's name is already in use.")
             else:
                 oem_id = adowner_args["id"]
-                bdx_id = len(AdOwner.query.all()) + 1
                 bdx_materials = [dict(
                     type_id=material["TypeId"],
                     name=material["Name"],
@@ -83,10 +82,10 @@ class AdvertisersAPI(Resource):
                 ) for material in adowner_args["bdx_materials"]]
                 adowner = AdOwner(
                     oem_id=oem_id,
-                    bdx_id=bdx_id,
                     name=adowner_args["name"],
                     area=adowner_args["area"],
                     category=adowner_args["category"],
+                    brand=adowner_args["brand"],
                     turn=adowner_args["turn"],
                     url=adowner_args["url"],
                     lic=adowner_args["lic"],
@@ -109,7 +108,7 @@ class AdvertisersAPI(Resource):
                 return {
                     "success": True,
                     "message": "",
-                    "data": {"qualification": {oem_id: bdx_id}}
+                    "data": {"qualification": {oem_id: adowner.bdx_id}}
                 }
 
 
