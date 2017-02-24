@@ -33,3 +33,13 @@ api.add_resource(mock_dsp.AdvertisersAPI, "/dsp/api/v1.0/advertisers",
 api.add_resource(mock_dsp.AdvertiserAPI,
                  "/dsp/api/v1.0/advertiser/<int:oem_id>",
                  endpoint="advertiser")
+
+api.add_resource(mock_dsp.CreativesAPI,
+                 "/dsp/api/v1.0/advertiser/<int:aid>/creatives",
+                 endpoint="advertiser_creatives")
+api.add_resource(mock_dsp.CreativeAPI,
+                 "/dsp/api/v1.0/advertiser/<int:aid>/creative/<int:cid>",
+                 endpoint="advertiser_creative")
+
+api.add_resource(mock_dsp.FilesAPI, "/dsp/api/v1.0/files",
+                 endpoint="files")

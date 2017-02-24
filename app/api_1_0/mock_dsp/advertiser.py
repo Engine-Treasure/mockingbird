@@ -131,7 +131,6 @@ class AdvertiserAPI(Resource):
             root_args = self.root_reqparser.parse_args()
             # 需要先获得 root_args, 作为 adowner_reqparser 的参数
             adowner_args = self.adowner_reqparser.parse_args(root_args)
-            oem_id = adowner_args["oem_id"]
             adowner = AdOwner.query.filter_by(oem_id=oem_id).first()
             if adowner is None:
                 abort(400, "AdOwner doesn't exist.")
@@ -143,7 +142,7 @@ class AdvertiserAPI(Resource):
                     name=material["Name"],
                     path=material["Path"]
                 ) for material in adowner_args["bdx_materials"]]
-                adowner.oem_id = oem_id
+                adowner.oem_id = adowner_args["id"]  # 允许改变 oem_id
                 adowner.area = adowner_args["area"]
                 adowner.category = adowner_args["category"]
                 adowner.turn = adowner_args["turn"]
@@ -159,9 +158,9 @@ class AdvertiserAPI(Resource):
                 adowner.bdx_materials = pickle.dumps(bdx_materials)
             try:
                 db.session.commit()
-            except Exception:
+            except IntegrityError:
                 db.session.rollback()
-                abort(500)
+                abort(400, "Id is already in used.")
 
             return {
                 "success": True,

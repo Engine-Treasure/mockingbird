@@ -16,6 +16,7 @@ class Config(object):
     MOCKINGBIRD_MAIL_SUBJECT_PREFIX = "[Mockingbird]"
     MOCKINGBIRD_MAIL_SENDER = "Mockingbird Admin enginechen07@gmail.com"
     MOCKINGBIRD_ADMIN = os.environ.get("MOCKING_ADMIN")
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     @staticmethod
     def init_app(app):
