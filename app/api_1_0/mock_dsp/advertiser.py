@@ -27,23 +27,23 @@ def set_reqparser(self):
     self.adowner_reqparser.add_argument("id", type=int, required=True,
                                         help="AdOwner Id is required.",
                                         location="adOwner")
-    self.adowner_reqparser.add_argument("name", type=str,
+    self.adowner_reqparser.add_argument("name", type=unicode,
                                         location="adOwner")
-    self.adowner_reqparser.add_argument("area", type=str,
+    self.adowner_reqparser.add_argument("area", type=unicode,
                                         location="adOwner")
-    self.adowner_reqparser.add_argument("category", type=str,
+    self.adowner_reqparser.add_argument("category", type=unicode,
                                         location="adOwner")
-    self.adowner_reqparser.add_argument("brand", type=str,
+    self.adowner_reqparser.add_argument("brand", type=unicode,
                                         location="adOwner")
-    self.adowner_reqparser.add_argument("turn", type=str,
+    self.adowner_reqparser.add_argument("turn", type=unicode,
                                         location="adOwner")
-    self.adowner_reqparser.add_argument("url", type=str, location="adOwner")
-    self.adowner_reqparser.add_argument("lic", type=str, location="adOwner")
-    self.adowner_reqparser.add_argument("org", type=str, location="adOwner")
-    self.adowner_reqparser.add_argument("tax", type=str, location="adOwner")
-    self.adowner_reqparser.add_argument("reg", type=str, location="adOwner")
-    self.adowner_reqparser.add_argument("icp", type=str, location="adOwner")
-    self.adowner_reqparser.add_argument("card", type=str,
+    self.adowner_reqparser.add_argument("url", type=unicode, location="adOwner")
+    self.adowner_reqparser.add_argument("lic", type=unicode, location="adOwner")
+    self.adowner_reqparser.add_argument("org", type=unicode, location="adOwner")
+    self.adowner_reqparser.add_argument("tax", type=unicode, location="adOwner")
+    self.adowner_reqparser.add_argument("reg", type=unicode, location="adOwner")
+    self.adowner_reqparser.add_argument("icp", type=unicode, location="adOwner")
+    self.adowner_reqparser.add_argument("card", type=unicode,
                                         location="adOwner")
     self.adowner_reqparser.add_argument("bdx_materials", type=list,
                                         location="adOwner")
