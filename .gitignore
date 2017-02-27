@@ -83,7 +83,6 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
-ENV3/
 
 # Spyder project settings
 .spyderproject
@@ -93,3 +92,7 @@ ENV3/
 
 .idea/
 *.sqlite
+
+# custom
+ENV3/
+upload_folder/
