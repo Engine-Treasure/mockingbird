@@ -4,7 +4,7 @@ __author__ = "kissg"
 __date__ = "2017-02-23"
 
 import os
-from io import BytesIO
+from io import BytesIO, StringIO
 
 from PIL import Image
 from flask import request, abort
@@ -31,19 +31,20 @@ class FilesAPI(Resource):
         super(FilesAPI, self).__init__()
 
     def post(self):
-        with Image.open(BytesIO(request.stream.read())) as img:
-            type_ = img.format.lower()
-            file_id = gen_random_str(6, 10) + "." + type_
-            width, height = img.size
-            try:
-                img.save(os.path.join("upload_folder", file_id))
-            except Exception:
-                abort(500)
-            size = os.stat(os.path.join("upload_folder", file_id)).st_size
-
-            return {"success": True, "message": "",
-                    "data": {"id": file_id,
-                             "type": type_,
-                             "size": size,
-                             "width": width,
-                             "height": height}}
+        try:
+            l = list()
+            for k, v in request.files.items():
+                with Image.open(v) as img:
+                    type_ = img.format.lower()
+                    file_id = gen_random_str(6, 10) + "." + type_
+                    width, height = img.size
+                    try:
+                        img.save(os.path.join("upload_folder", file_id))
+                    except Exception:
+                        abort(500)
+                    size = os.stat(os.path.join("upload_folder", file_id)).st_size
+                    l.append({"id": file_id, "type": type_, "size": size,
+                              "width": width,"height": height})
+            return {"success": True, "message": "", "data": l}
+        except Exception as e:
+            return {"success": False, "message": e}
