@@ -23,23 +23,23 @@ def before_request():
         abort(401)
 
 
-api.add_resource(mock_todo.TaskListAPI, "/todo/api/v1.0/tasks",
+api.add_resource(mock_todo.TaskListAPI, "/todo/tasks",
                  endpoint="tasks")
-api.add_resource(mock_todo.TaskAPI, "/todo/api/v1.0/task/<int:id>",
+api.add_resource(mock_todo.TaskAPI, "/todo/task/<int:id>",
                  endpoint="task")
 
-api.add_resource(mock_dsp.AdvertisersAPI, "/dsp/api/v1.0/advertisers",
+api.add_resource(mock_dsp.AdvertisersAPI, "/dsp/advertisers",
                  endpoint="advertisers")
 api.add_resource(mock_dsp.AdvertiserAPI,
-                 "/dsp/api/v1.0/advertiser/<int:oem_id>",
+                 "/dsp/advertiser/<int:oem_id>",
                  endpoint="advertiser")
 
 api.add_resource(mock_dsp.CreativesAPI,
-                 "/dsp/api/v1.0/advertiser/<int:aid>/creatives",
+                 "/dsp/advertiser/<int:aid>/creatives",
                  endpoint="advertiser_creatives")
 api.add_resource(mock_dsp.CreativeAPI,
-                 "/dsp/api/v1.0/advertiser/<int:aid>/creative/<int:cid>",
+                 "/dsp/advertiser/<int:aid>/creative/<int:cid>",
                  endpoint="advertiser_creative")
 
-api.add_resource(mock_dsp.FilesAPI, "/dsp/api/v1.0/files",
+api.add_resource(mock_dsp.FilesAPI, "/dsp/files",
                  endpoint="files")

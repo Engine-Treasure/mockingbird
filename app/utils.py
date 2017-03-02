@@ -17,7 +17,7 @@ def gen_random_str(mode=1, length=8):
         6: string.letters + string.digits + string.punctuation,
     }.get(mode, string.letters)
     return "".join(
-        random.SystemRandom().choice(string.letters) for _ in range(length))
+        random.SystemRandom().choice(s) for _ in range(length))
 
 
 if __name__ == '__main__':

@@ -10,6 +10,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config(object):
+    # 通用密钥, 可在 Flask 和多个第三方扩展中使用.
+    # 本项目中, 用于为 Flask-WTF 生成加密密令
     SECRET_KEY = os.environ.get("SECRET_KEY") \
                  or "Engine, will you love Echo forever?"
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True

@@ -1,7 +1,10 @@
-from flask import Flask, render_template
+# -*- coding:utf-8 -*-
+
+from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+
 from config import config
 
 bootstrap = Bootstrap()
@@ -10,21 +13,20 @@ db = SQLAlchemy()
 
 
 def create_app(config_name):
-    app = Flask(__name__)
-    app.debug = True
+    app = Flask(__name__)  # Flask 用这个参数决策程序根目录, 以方便地对资源进行定位
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
+    # 注册回调函数, 实现各功能
     bootstrap.init_app(app)
     moment.init_app(app)
     db.init_app(app)
 
+    # 注册 Blueprint
     from .main import main as main_bp
     app.register_blueprint(main_bp)
 
     from api_1_0 import api_bp
-    app.register_blueprint(api_bp)
+    app.register_blueprint(api_bp, url_prefix="/api/v1.0")
 
     return app
-
-

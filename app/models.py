@@ -15,6 +15,10 @@ class Role(db.Model):
 
     users = db.relationship("User", backref="role")
 
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
     def __repr__(self):
         return "<Role %r>" % self.name
 
@@ -25,6 +29,11 @@ class User(db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
 
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+
+    def __init__(self, id, username, role_id):
+        self.id = id
+        self.username = username
+        self.role_id = role_id
 
     def __repr__(self):
         return "<User %r>" % self.username
@@ -51,7 +60,7 @@ class AdOwner(db.Model):
     adx_id = db.Column(db.String)
     bdx_materials = db.Column(db.String)
 
-    creatives =db.relationship("Creative", backref="adowner", lazy="dynamic")
+    creatives = db.relationship("Creative", backref="adowner", lazy="dynamic")
 
     def __init__(self, oem_id, name, url, area, category, brand, turn, lic, org,
                  tax, reg, icp, card, adx, adx_id, bdx_materials):
@@ -101,10 +110,10 @@ class Creative(db.Model):
     copy_to_bdx = db.Column(db.Boolean)
     status = db.Column(db.Integer)
 
-    adowner_id_oem = db.Column(db.Integer, db.ForeignKey("adowners.oem_id"))
+    adowner_bdx_id = db.Column(db.Integer, db.ForeignKey("adowners.bdx_id"))
 
     def __init__(self, oem_id, name, size, type_, file_id, path, code, click,
-                 deep_click, copy_to_bdx, status, adowner_id_oem):
+                 deep_click, copy_to_bdx, status, adowner_bdx_id):
         self.oem_id = oem_id
         self.name = name
         self.size = size
@@ -116,7 +125,7 @@ class Creative(db.Model):
         self.deep_click = deep_click
         self.copy_to_bdx = copy_to_bdx
         self.status = status
-        self.adowner_id_oem = adowner_id_oem
+        self.adowner_bdx_id = adowner_bdx_id
 
     def __repr__(self):
         return '<Creative %r>' % self.oem_id
