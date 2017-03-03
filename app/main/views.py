@@ -5,12 +5,14 @@ __date__ = "2017-02-21"
 
 from datetime import datetime
 
-from flask import render_template, session, redirect, url_for, flash
+from flask import render_template, session, redirect, url_for
 
+from config import Config
 from . import main
 from .forms import NameForm
 from .. import db
 from ..models import User
+from ..utils import send_email
 
 
 # 由蓝本提供路由装饰器
@@ -23,6 +25,9 @@ def index():
             user = User(username=form.name.data)
             db.session.add(user)
             session['known'] = False
+            if Config.MOCKINGBIRD_ADMIN:
+                send_email(Config.MOCKINGBIRD_ADMIN, "New User",
+                           "mail/new_user", user=user)
         else:
             session["known"] = True
         session['name'] = form.name.data

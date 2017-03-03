@@ -16,8 +16,8 @@ class Config(object):
                  or "Engine, will you love Echo forever?"
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     MOCKINGBIRD_MAIL_SUBJECT_PREFIX = "[Mockingbird]"
-    MOCKINGBIRD_MAIL_SENDER = "Mockingbird Admin enginechen07@gmail.com"
-    MOCKINGBIRD_ADMIN = os.environ.get("MOCKING_ADMIN")
+    MOCKINGBIRD_MAIL_SENDER = "Mockingbird Admin <cwf773810@163.com>"
+    MOCKINGBIRD_ADMIN = os.environ.get("MOCKINGBIRD_ADMIN")
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     @staticmethod
@@ -27,8 +27,9 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    MAIL_SERVER = "smtp.googlemail.com"
-    MAIL_PORT = 587
+    MAIL_SERVER = "smtp.163.com"
+    MAIL_PORT = 994
+    MAIL_USE_SSL = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL") or \

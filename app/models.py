@@ -13,10 +13,10 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
 
-    users = db.relationship("User", backref="role")
+    # lazy - 禁止自动执行查询
+    users = db.relationship("User", backref="role", lazy="dynamic")
 
-    def __init__(self, id, name):
-        self.id = id
+    def __init__(self, name):
         self.name = name
 
     def __repr__(self):
@@ -30,8 +30,7 @@ class User(db.Model):
 
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
 
-    def __init__(self, id, username, role_id):
-        self.id = id
+    def __init__(self, username, role_id=None):
         self.username = username
         self.role_id = role_id
 

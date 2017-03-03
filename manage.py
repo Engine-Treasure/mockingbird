@@ -1,4 +1,5 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# !/usr/bin/python
 
 import os
 
@@ -13,10 +14,12 @@ manager = Manager(app)
 migrate = Migrate(app, db)
 
 
+# 注册程序, 数据库实例及模型
 def make_shell_context():
     return dict(app=app, db=db, User=User, Role=Role)
 
 
+# 注册程序, 数据库实例及模型
 manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command("db", MigrateCommand)
 

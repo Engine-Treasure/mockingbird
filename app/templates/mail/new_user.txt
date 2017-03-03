@@ -1,0 +1,3 @@
+Dear Administrator
+
+Here is a new user {{ user }}.

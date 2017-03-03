@@ -38,13 +38,15 @@
     <div class="container">
         <!-- 在模板中使用循环是因为在之前的请求循环中每次调用 flash() 函数时都会生成一个消息,
             所以可能有多个消息在排队等待显示 -->
+        {# note: Do not use flash feature temporarily
         {% for message in get_flashed_message() %}
         <div class="alert alert-warning">
             <button type="button" class="close"
                     data-dismiss="alert">&times;</button>
             {{ message }}
         </div>
-        { % endfor % }
+        {% endfor %}
+        #}
         {% block page_content %}{% endblock %}
     </div>
 {% endblock %}
@@ -52,5 +54,4 @@
 {% block scripts %}
     {{ super() }}
     {{ moment.include_moment() }}
-    {{ moment.locale("en") }}
 {% endblock %}
