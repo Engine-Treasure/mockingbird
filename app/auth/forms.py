@@ -79,3 +79,16 @@ class ResetpasswordForm_password(FlaskForm):
     password2 = PasswordField("Confirm New password",
                               validators=[DataRequired()])
     submit = SubmitField("Reset password")
+
+
+class UpdateemailForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Length(1, 64),
+                                             Email()])
+
+    # validate_ 开头的方法, 与常规的验证函数一起调用
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError("Email is alreay in use.")
+
+    submit = SubmitField("Confirm")
+

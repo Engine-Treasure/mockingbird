@@ -10,10 +10,11 @@ from flask_login import login_required, login_user, logout_user, current_user
 from app import db
 from . import auth
 from .forms import LoginForm, RegistrationForm, UpdatepasswordForm, \
-    ResetpasswordForm_email, ResetpasswordForm_password
+    ResetpasswordForm_email, ResetpasswordForm_password, UpdateemailForm
 from ..email import send_email
 from ..models import User
 
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 @auth.before_app_request
 def before_request():
@@ -97,6 +98,7 @@ def logout():
 
 
 @auth.route("/settings")
+@login_required
 def settings():
     return render_template("auth/settings.html")
 
@@ -133,8 +135,6 @@ def check_account():
 def reset_password(token):
     form = ResetpasswordForm_password()
     if form.validate_on_submit():
-        #
-        from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
         user_id = Serializer(current_app.config["SECRET_KEY"]).loads(token).get(
             "confirm")
         user = User.query.filter_by(id=user_id).first()
@@ -144,3 +144,29 @@ def reset_password(token):
         flash("Reset password succeed. You can login with your new password.")
         return redirect(url_for("auth.login"))
     return render_template("auth/reset_password.html", form=form)
+
+
+@auth.route("/update_email", methods=["GET", "POST"])
+@login_required
+def update_email():
+    form = UpdateemailForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(id=current_user.id).first()
+        token = user.generate_confirmation_token(email=form.email.data)
+        send_email(form.email.data, "Reset Email", "mail/update_email",
+                   token=token)
+        flash("A email has been sent to your new email address, \
+            please check it.")
+        return redirect(url_for("auth.login"))
+    return render_template("auth/update_email.html", form=form)
+
+
+@auth.route("/confirm_new_email/<token>", )
+def confirm_new_email(token):
+    user_info = Serializer(current_app.config["SECRET_KEY"]).loads(token)
+    user = User.query.filter_by(id=user_info.get("confirm")).first()
+    user.email = user_info.get("email")
+    db.session.add(user)
+    flash("Update email succeed. You can login with your new email.")
+    return redirect(url_for("auth.login"))
+
