@@ -1,41 +1,11 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "kissg"
-__date__ = "2017-02-21"
+__date__ = "2017-03-06"
 
 import pickle
 
-from . import db
-
-
-class Role(db.Model):
-    __tablename__ = "roles"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
-
-    # lazy - 禁止自动执行查询
-    users = db.relationship("User", backref="role", lazy="dynamic")
-
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return "<Role %r>" % self.name
-
-
-class User(db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, index=True)
-
-    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
-
-    def __init__(self, username, role_id=None):
-        self.username = username
-        self.role_id = role_id
-
-    def __repr__(self):
-        return "<User %r>" % self.username
+from app import db
 
 
 class AdOwner(db.Model):

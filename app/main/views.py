@@ -11,8 +11,8 @@ from config import Config
 from . import main
 from .forms import NameForm
 from .. import db
+from ..email import send_email
 from ..models import User
-from ..utils import send_email
 
 
 # 由蓝本提供路由装饰器

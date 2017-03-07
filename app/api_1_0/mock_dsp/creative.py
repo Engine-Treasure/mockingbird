@@ -2,17 +2,15 @@
 
 
 import os
-import pickle
 import time
+from urllib import urlretrieve
 
 from flask import request, abort
 from flask_restful import Resource, reqparse
 from sqlalchemy.exc import IntegrityError
 
 from app import db
-from app.models import AdOwner, Creative
-
-from urllib import urlretrieve
+from app.models import Creative
 
 
 def set_reqparser(self):

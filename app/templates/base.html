@@ -29,6 +29,13 @@
                 <ul class="nav navbar-nav">
                     <li><a href="/">Home</a></li>
                 </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('auth.logout') }}">Sign Out</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('auth.login') }}">Sign In</a></li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </div>
@@ -38,15 +45,13 @@
     <div class="container">
         <!-- 在模板中使用循环是因为在之前的请求循环中每次调用 flash() 函数时都会生成一个消息,
             所以可能有多个消息在排队等待显示 -->
-        {# note: Do not use flash feature temporarily
-        {% for message in get_flashed_message() %}
+        {% for message in get_flashed_messages() %}
         <div class="alert alert-warning">
             <button type="button" class="close"
                     data-dismiss="alert">&times;</button>
             {{ message }}
         </div>
         {% endfor %}
-        #}
         {% block page_content %}{% endblock %}
     </div>
 {% endblock %}
