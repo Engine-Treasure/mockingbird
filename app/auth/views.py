@@ -3,14 +3,16 @@
 __author__ = "kissg"
 __date__ = "2017-03-06"
 
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash, \
+    current_app
 from flask_login import login_required, login_user, logout_user, current_user
 
 from app import db
 from . import auth
-from .forms import LoginForm, RegistrationForm
-from ..models import User
+from .forms import LoginForm, RegistrationForm, UpdatepasswordForm, \
+    ResetpasswordForm_email, ResetpasswordForm_password
 from ..email import send_email
+from ..models import User
 
 
 @auth.before_app_request
@@ -94,7 +96,51 @@ def logout():
     return redirect(url_for("main.index"))
 
 
-@auth.route("/secret")
+@auth.route("/settings")
+def settings():
+    return render_template("auth/settings.html")
+
+
+@auth.route("/update_password", methods=["GET", "POST"])
 @login_required
-def secret():
-    return "Only authenticated users are allowed."
+def update_password():
+    form = UpdatepasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(id=current_user.id).first()
+        user.password = form.password.data
+        db.session.add(user)
+        db.session.commit()
+        logout_user()
+        flash("Update password succeed. Please login again.")
+        return redirect(url_for("auth.login"))
+    return render_template("auth/update_password.html", form=form)
+
+
+@auth.route("/check_account", methods=["GET", "POST"])
+def check_account():
+    form = ResetpasswordForm_email()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        token = user.generate_confirmation_token()
+        send_email(user.email, "Reset Password", "mail/reset_password",
+                   user=user, token=token)
+        flash("A email has been sent to you by email.")
+        return redirect(url_for("auth.login"))
+    return render_template("auth/reset_password.html", form=form)
+
+
+@auth.route("/reset_password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    form = ResetpasswordForm_password()
+    if form.validate_on_submit():
+        #
+        from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+        user_id = Serializer(current_app.config["SECRET_KEY"]).loads(token).get(
+            "confirm")
+        user = User.query.filter_by(id=user_id).first()
+        user.password = form.password.data
+        db.session.add(user)
+        db.session.commit()
+        flash("Reset password succeed. You can login with your new password.")
+        return redirect(url_for("auth.login"))
+    return render_template("auth/reset_password.html", form=form)
