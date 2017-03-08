@@ -3,6 +3,8 @@
 __author__ = "kissg"
 __date__ = "2017-03-06"
 
+import hashlib
+
 from flask import render_template, redirect, request, url_for, flash, \
     current_app
 from flask_login import login_required, login_user, logout_user, current_user
@@ -168,6 +170,7 @@ def confirm_new_email(token):
     user_info = Serializer(current_app.config["SECRET_KEY"]).loads(token)
     user = User.query.filter_by(id=user_info.get("confirm")).first()
     user.email = user_info.get("email")
+    user.avatar_hash = hashlib.md5(user.email.encode('utf-8')).hexdigest()
     db.session.add(user)
     flash("Update email succeed. You can login with your new email.")
     return redirect(url_for("auth.login"))

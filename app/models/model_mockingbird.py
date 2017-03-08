@@ -4,8 +4,9 @@ __author__ = "kissg"
 __date__ = "2017-02-21"
 
 from datetime import datetime
+import hashlib
 
-from flask import current_app
+from flask import current_app, request
 from flask_login import UserMixin, AnonymousUserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -64,6 +65,7 @@ class Role(db.Model):
 # UserMixin - 包含了一些用户方法的默认实现
 class User(UserMixin, db.Model):
     __tablename__ = "users"
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
@@ -79,6 +81,8 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
 
+    avatar_hash = db.Column(db.String(32))
+
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
@@ -88,6 +92,9 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(permissions=0xff).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+            if self.email is not None and self.avatar_hash is None:
+                self.avatar_hash = hashlib.md5(
+                    self.email.encode("utf-8")).hexdigest()
 
     def __repr__(self):
         return "<User %r>" % self.username
@@ -134,6 +141,17 @@ class User(UserMixin, db.Model):
         '''每次收到用户请求时, 调用. 在 before_app_request 中调用'''
         self.last_seen = datetime.utcnow()
         db.session.add(self)
+
+    def gravatar(self, size=100, default="identicon", rating="9"):
+        if request.is_secure:
+            url = "https://secure.gravatar.com/avatar"
+        else:
+            url = "http://gravatar.com/avatar"
+        hash_ = self.avatar_hash or hashlib.md5(
+            self.email.encode("utf-8")).hexdigest()
+        return "{url}/{hash}?s={size}&d={default}&r={rating}".format(
+            url=url, hash=hash_, size=size, default=default, rating=rating
+        )
 
 
 class AnonymousUser(AnonymousUserMixin):
