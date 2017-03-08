@@ -4,4 +4,4 @@ __author__ = "kissg"
 __date__ = "2017-03-06"
 
 from model_dsp import AdOwner, Creative
-from model_mockingbird import Role, User
+from model_mockingbird import Role, User, Permission, AnonymousUser
