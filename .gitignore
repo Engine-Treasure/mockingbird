@@ -94,6 +94,7 @@ ENV/
 *.sqlite
 
 # custom
+set_env.sh
 ENV3/
 upload_folder/
 migrations/
