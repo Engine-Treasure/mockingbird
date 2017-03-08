@@ -16,6 +16,7 @@ from ..models import User
 
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
+
 @auth.before_app_request
 def before_request():
     """
@@ -24,10 +25,11 @@ def before_request():
     2) 用户未验证
     3) 请求的断点不在蓝本中
     """
-    if current_user.is_authenticated \
-            and not current_user.confirmed \
-            and request.endpoint[:5] != "auth.":
-        return redirect(url_for("auth.unconfirmed"))
+    if current_user.is_authenticated:
+        current_user.ping()
+        if not current_user.confirmed \
+                and request.endpoint[:5] != "auth.":
+            return redirect(url_for("auth.unconfirmed"))
 
 
 @auth.route("/register", methods=["GET", "POST"])
@@ -44,7 +46,7 @@ def register():
         send_email(user.email, "Confirm Your Account", "mail/confirm",
                    user=user, token=token)
         flash("A confirmation email has been sent to you by email.")
-        return redirect(url_for("main.index"))
+        return redirect(url_for("auth.unconfirmed"))
     return render_template("auth/register.html", form=form)
 
 
@@ -169,4 +171,3 @@ def confirm_new_email(token):
     db.session.add(user)
     flash("Update email succeed. You can login with your new email.")
     return redirect(url_for("auth.login"))
-
