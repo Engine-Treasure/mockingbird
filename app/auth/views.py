@@ -19,6 +19,8 @@ from ..models import User
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
+
+
 @auth.before_app_request
 def before_request():
     """

@@ -3,45 +3,30 @@
 __author__ = "kissg"
 __date__ = "2017-02-21"
 
-from datetime import datetime
-
-from flask import render_template, session, redirect, url_for, abort, flash
+from flask import render_template, redirect, url_for, abort, flash
 from flask_login import login_required, current_user
 
-from config import Config
-from . import main
-from .forms import NameForm, EditProfileForm, EditProfileAdminForm
-from .. import db
-from ..email import send_email
-from ..models import User, Role
 from app.decorators import admin_required
+from . import main
+from .forms import EditProfileForm, EditProfileAdminForm, PostForm
+from .. import db
+from ..models import User, Role, Post, Permission
 
 
 # 由蓝本提供路由装饰器
 @main.route("/", methods=["GET", "POST"])
 def index():
-    form = NameForm()
-    if form.validate_on_submit():  # 数据能被所有验证函数接受
-        user = User.query.filter_by(username=form.name.data).first()
-        if user is None:
-            user = User(username=form.name.data)
-            db.session.add(user)
-            session['known'] = False
-            if Config.MOCKINGBIRD_ADMIN:
-                send_email(Config.MOCKINGBIRD_ADMIN, "New User",
-                           "mail/new_user", user=user)
-        else:
-            session["known"] = True
-        session['name'] = form.name.data
-        form.name.data = ""
-        # Flask 会为蓝本中的全部端点加上一个命名空间 (命名空间即蓝本的名字)
-        # 于是可以在不同蓝本中使用相同的端点名定义视图函数
-        return redirect(url_for("main.index", current_time=datetime.utcnow()))
-    return render_template("index.html",
-                           # session.get 避免为找到键的异常情况
-                           form=form, name=session.get("name"),
-                           known=session.get("known", False),
-                           current_time=datetime.utcnow())
+    form = PostForm()
+    if current_user.can(Permission.WRITE_ARTICLES) and \
+            form.validate_on_submit():
+        post = Post(body=form.body.data,
+                    # current_user 是一个真正用户对象的轻包装
+                    # DB 需要真正的用户对象
+                    author=current_user._get_current_object())
+        db.session.add(post)
+        return redirect(url_for("main.index"))
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template("index.html", form=form, posts=posts)
 
 
 @main.route("/user/<username>")
@@ -49,7 +34,8 @@ def user(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
         abort(404)
-    return render_template("user.html", user=user)
+    posts = user.posts.order_by(Post.timestamp.desc()).all()
+    return render_template("user.html", user=user, posts=posts)
 
 
 @main.route("/edit-profile", methods=["GET", "POST"])
@@ -94,3 +80,5 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template("edit_profile.html", form=form, user=user)
+
+

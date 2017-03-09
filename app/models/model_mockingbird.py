@@ -3,8 +3,8 @@
 __author__ = "kissg"
 __date__ = "2017-02-21"
 
-from datetime import datetime
 import hashlib
+from datetime import datetime
 
 from flask import current_app, request
 from flask_login import UserMixin, AnonymousUserMixin
@@ -72,6 +72,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
 
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+    posts = db.relationship("Post", backref="author", lazy="dynamic")
 
     confirmed = db.Column(db.Boolean, default=False)
 
@@ -150,8 +151,30 @@ class User(UserMixin, db.Model):
         hash_ = self.avatar_hash or hashlib.md5(
             self.email.encode("utf-8")).hexdigest()
         return "{url}/{hash}?s={size}&d={default}&r={rating}".format(
-            url=url, hash=hash_, size=size, default=default, rating=rating
-        )
+            url=url, hash=hash_, size=size, default=default, rating=rating)
+
+    @staticmethod
+    def generate_fake(count=100):
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        from faker import Faker
+
+        fake = Faker()
+        seed()
+        for i in range(count):
+            u = User(email=fake.email(),
+                     username=fake.name(),
+                     password=fake.password(),
+                     confirmed=True,
+                     name=fake.name(),
+                     location=fake.city(),
+                     about_me="".join(fake.sentences()),
+                     member_since=fake.date_time())
+            db.session.add(u)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
 
 
 class AnonymousUser(AnonymousUserMixin):
@@ -173,3 +196,28 @@ login_manager.anonymous_user = AnonymousUser
 def load_user(user_id):
     # 回调函数, 用于指定的标识符加载用户
     return User.query.get(int(user_id))
+
+
+class Post(db.Model):
+    __tablename__ = "posts"
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed, randint
+        from faker import Faker
+
+        fake = Faker()
+        seed()
+        user_count = User.query.count()
+        for i in range(count):
+            # offset 跳过指定的偏移量, 与 first() 搭配, 实现随机选择用户
+            u = User().query.offset(randint(0, user_count - 1)).first()
+            p = Post(body="".join(fake.paragraph()),
+                     timestamp=fake.date_time(),
+                     author=u)
+            db.session.add(p)
+            db.session.commit()
