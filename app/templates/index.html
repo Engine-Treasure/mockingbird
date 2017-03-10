@@ -28,3 +28,9 @@
     </div>
 {% endblock %}
 
+{# Markdown 预览需要使用 PageDown 库生成, 要在模板中修改.
+Flask-PageDown 提供了一个模板宏, 简化了过程 #}
+{% block scripts %}
+    {{ super() }}
+    {{ pagedown.include_pagedown() }}
+{% endblock %}
