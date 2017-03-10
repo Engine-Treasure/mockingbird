@@ -3,7 +3,8 @@
 __author__ = "kissg"
 __date__ = "2017-02-21"
 
-from flask import render_template, redirect, url_for, abort, flash
+from flask import render_template, redirect, url_for, abort, flash, request, \
+    current_app
 from flask_login import login_required, current_user
 
 from app.decorators import admin_required
@@ -25,8 +26,13 @@ def index():
                     author=current_user._get_current_object())
         db.session.add(post)
         return redirect(url_for("main.index"))
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template("index.html", form=form, posts=posts)
+    page = request.args.get("page", 1, type=int)  # 从查询字符串获取页数
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config["MOCKINGBIRD_POSTS_PER_PAGE"],
+        error_out=False)  # 页面超出范围, 返回一个空列表; True 时, 则返回 404
+    posts = pagination.items
+    return render_template("index.html", form=form, posts=posts,
+                           pagination=pagination)
 
 
 @main.route("/user/<username>")
@@ -80,5 +86,3 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template("edit_profile.html", form=form, user=user)
-
-
